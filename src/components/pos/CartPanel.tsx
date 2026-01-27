@@ -12,7 +12,7 @@ interface CartPanelProps {
   showPayment: boolean;
   setShowPayment: (show: boolean) => void;
   onPrint: () => void;
-  onCompleteSale: (method: 'cash' | 'card' | 'credit') => void;
+  onComplete: (method: 'cash' | 'card' | 'credit') => void;
   selectedMethod: 'cash' | 'card' | 'credit' | null;
   onSelectMethod: (method: 'cash' | 'card' | 'credit' | null) => void;
 }
@@ -23,11 +23,11 @@ const CartPanel: React.FC<CartPanelProps> = ({
   showPayment,
   setShowPayment,
   onPrint,
-  onCompleteSale,
+  onComplete,
   selectedMethod,
   onSelectMethod
 }) => {
-  const { items, updateQuantity, updateDiscount, removeItem, subtotal, tax, total, clearCart, itemCount } = useCart();
+  const { items, updateQuantity, updateDiscount, removeItem, subtotal, tax, total, clearCart, itemCount, isReturnMode, originalSaleId } = useCart();
   const { currentUser } = useAuth();
   const { shortcuts } = useShortcuts();
   const { t, i18n } = useTranslation();
@@ -43,7 +43,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
 
     // Auto-open print if needed or just complete
     onPrint();
-    onCompleteSale(selectedMethod || 'cash');
+    onComplete(selectedMethod || 'cash');
     onSelectMethod(null);
     setCashReceived('');
   };
@@ -75,9 +75,9 @@ const CartPanel: React.FC<CartPanelProps> = ({
         </div>
 
         {/* Total Display */}
-        <div className="p-6 bg-primary/5 border-b border-border/50 text-center">
-          <p className="text-sm text-muted-foreground mb-1">{t('total')}</p>
-          <p className="text-4xl font-bold text-primary">Rs. {total.toLocaleString()}</p>
+        <div className={`p-6 border-b border-border/50 text-center ${isReturnMode ? 'bg-orange-500/5' : 'bg-primary/5'}`}>
+          <p className="text-sm text-muted-foreground mb-1">{isReturnMode ? 'Refund Amount' : t('total')}</p>
+          <p className={`text-4xl font-bold ${isReturnMode ? 'text-orange-500' : 'text-primary'}`}>Rs. {total.toLocaleString()}</p>
         </div>
 
         {selectedMethod === 'cash' ? (
@@ -109,10 +109,10 @@ const CartPanel: React.FC<CartPanelProps> = ({
 
             <button
               onClick={handleFinalize}
-              className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-lg hover:bg-primary/90 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              className={`w-full py-4 text-primary-foreground rounded-2xl font-bold text-lg transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${isReturnMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-primary hover:bg-primary/90'}`}
             >
               <Printer className="w-5 h-5" />
-              {t('confirm_and_print')}
+              {isReturnMode ? 'Process Refund' : t('confirm_and_print')}
             </button>
             <p className="text-xs text-center text-muted-foreground lowercase italic">press enter to finalize</p>
           </div>
@@ -138,7 +138,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
             <button
               onClick={() => {
                 onPrint();
-                onCompleteSale('card');
+                onComplete('card');
               }}
               className="w-full p-4 pos-card-hover flex items-center justify-between group"
             >
@@ -157,7 +157,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
             <button
               onClick={() => {
                 onPrint();
-                onCompleteSale('credit');
+                onComplete('credit');
               }}
               className="w-full p-4 pos-card-hover flex items-center justify-between group"
             >
@@ -199,6 +199,13 @@ const CartPanel: React.FC<CartPanelProps> = ({
             </div>
           )}
         </div>
+        {isReturnMode && (
+          <div className="mx-2 mt-2 p-2 bg-orange-500/10 border border-orange-500/20 rounded-lg animate-pulse">
+            <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider text-center">
+              RETURN MODE – Original Bill #{originalSaleId}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Cart Items */}
@@ -286,29 +293,41 @@ const CartPanel: React.FC<CartPanelProps> = ({
             <span className="font-medium text-foreground">Rs. {tax.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-lg pt-2 border-t border-border/50">
-            <span className="font-semibold text-foreground">{t('total')}</span>
-            <span className="font-bold text-primary">Rs. {total.toLocaleString()}</span>
+            <span className="font-semibold text-foreground">{isReturnMode ? 'Refund Total' : t('total')}</span>
+            <span className={`font-bold ${isReturnMode ? 'text-orange-500' : 'text-primary'}`}>Rs. {total.toLocaleString()}</span>
           </div>
         </div>
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={onHoldBill}
-            disabled={items.length === 0}
-            className="pos-btn-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center py-1"
-          >
-            <span>{t('hold')} ({heldBillsCount})</span>
-            <span className="text-[10px] opacity-60 font-mono">F2</span>
-          </button>
-          <button
-            onClick={() => setShowPayment(true)}
-            disabled={items.length === 0}
-            className="pos-btn-success text-sm disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center py-1"
-          >
-            <span>{t('pay_now')}</span>
-            <span className="text-[10px] opacity-60 font-mono">F3</span>
-          </button>
+          {!isReturnMode ? (
+            <>
+              <button
+                onClick={onHoldBill}
+                disabled={items.length === 0}
+                className="pos-btn-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center py-1"
+              >
+                <span>{t('hold')} ({heldBillsCount})</span>
+                <span className="text-[10px] opacity-60 font-mono">F2</span>
+              </button>
+              <button
+                onClick={() => setShowPayment(true)}
+                disabled={items.length === 0}
+                className="pos-btn-success text-sm disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center py-1"
+              >
+                <span>{t('pay_now')}</span>
+                <span className="text-[10px] opacity-60 font-mono">F3</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowPayment(true)}
+              disabled={items.length === 0}
+              className="col-span-2 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20"
+            >
+              Confirm Return
+            </button>
+          )}
         </div>
       </div>
     </div>

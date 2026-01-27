@@ -88,6 +88,11 @@ const resources = {
             "cash_received": "Cash Received",
             "balance": "Balance",
             "confirm_and_print": "Confirm & Print",
+            "returns": "Returns",
+            "return_bill_manager": "Return Bill Manager",
+            "return_history": "Return History",
+            "process_return": "Process Return",
+            "refund_amount": "Refund Amount",
         }
     },
     si: {
@@ -175,6 +180,11 @@ const resources = {
             "cash_received": "ලැබුණු මුදල",
             "balance": "ඉතිරි මුදල",
             "confirm_and_print": "තහවුරු කර මුද්‍රණය කරන්න",
+            "returns": "ආපසු එවීම්",
+            "return_bill_manager": "මිලදී ගැනීම් ආපසු එවීමේ කළමනාකරු",
+            "return_history": "ආපසු එවීමේ ඉතිහාසය",
+            "process_return": "ආපසු භාරගන්න",
+            "refund_amount": "ප්‍රතිපූරණ මුදල",
         }
     }
 };

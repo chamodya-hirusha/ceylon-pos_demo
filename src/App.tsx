@@ -21,7 +21,7 @@ import Inventory from "./pages/admin/Inventory";
 import Employees from "./pages/admin/Employee";
 import Reports from "./pages/admin/Reports";
 import Settings from "./pages/admin/Settings";
-import History from "./pages/pos/History";
+import ReturnHistory from "./pages/admin/ReturnHistory";
 
 const queryClient = new QueryClient();
 
@@ -69,9 +69,7 @@ const AppRoutes = () => {
         path="/pos"
         element={
           <ProtectedRoute allowedRoles={['admin', 'manager', 'cashier']}>
-            <CartProvider>
-              <POSScreen />
-            </CartProvider>
+            <POSScreen />
           </ProtectedRoute>
         }
       />
@@ -79,7 +77,15 @@ const AppRoutes = () => {
         path="/pos/history"
         element={
           <ProtectedRoute allowedRoles={['admin', 'manager', 'cashier']}>
-            <History />
+            <SalesHistory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pos/returns"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'manager', 'cashier']}>
+            <ReturnHistory />
           </ProtectedRoute>
         }
       />
@@ -88,20 +94,18 @@ const AppRoutes = () => {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={['admin', 'manager']}>
+          <ProtectedRoute allowedRoles={['admin', 'manager', 'cashier']}>
             <AdminLayout />
           </ProtectedRoute>
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="pos" element={
-          <CartProvider>
-            <POSScreen />
-          </CartProvider>
-        } />
+        <Route path="pos" element={<POSScreen />} />
         <Route path="products" element={<Products />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="sales" element={<SalesHistory />} />
+        <Route path="sales" element={<SalesHistory />} />
+        <Route path="return-history" element={<ReturnHistory />} />
         <Route path="reports" element={<Reports />} />
         <Route path="employee" element={<Employees />} />
         <Route path="settings" element={<Settings />} />
@@ -119,13 +123,15 @@ const App = () => (
       <ShopProvider>
         <AuthProvider>
           <ShortcutProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </TooltipProvider>
+            <CartProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </TooltipProvider>
+            </CartProvider>
           </ShortcutProvider>
         </AuthProvider>
       </ShopProvider>

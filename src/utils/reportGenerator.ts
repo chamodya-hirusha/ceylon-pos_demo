@@ -1,5 +1,5 @@
 
-import { Sale, Product, Cashier } from '@/data/demoData';
+import { Sale, Product, Cashier, ReturnSale } from '@/data/demoData';
 
 const reportTemplateStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -111,11 +111,11 @@ const reportTemplateStyles = `
 `;
 
 export const generateSalesReportHTML = (sales: Sale[], shopName: string, dateRange: string) => {
-    const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
-    const totalTax = sales.reduce((sum, s) => sum + s.tax, 0);
-    const totalDiscount = sales.reduce((sum, s) => sum + s.discount, 0);
+  const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
+  const totalTax = sales.reduce((sum, s) => sum + s.tax, 0);
+  const totalDiscount = sales.reduce((sum, s) => sum + s.discount, 0);
 
-    const rows = sales.map(sale => `
+  const rows = sales.map(sale => `
     <tr>
       <td>${sale.id}</td>
       <td>${new Date(sale.timestamp).toLocaleString()}</td>
@@ -125,7 +125,7 @@ export const generateSalesReportHTML = (sales: Sale[], shopName: string, dateRan
     </tr>
   `).join('');
 
-    return `
+  return `
     <html>
       <head>
         <style>${reportTemplateStyles}</style>
@@ -186,10 +186,10 @@ export const generateSalesReportHTML = (sales: Sale[], shopName: string, dateRan
 };
 
 export const generateInventoryReportHTML = (products: Product[], shopName: string) => {
-    const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
-    const lowStockItems = products.filter(p => p.stock <= p.minStock).length;
+  const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+  const lowStockItems = products.filter(p => p.stock <= p.minStock).length;
 
-    const rows = products.map(p => `
+  const rows = products.map(p => `
     <tr>
       <td>${p.sku}</td>
       <td>${p.name}</td>
@@ -201,7 +201,7 @@ export const generateInventoryReportHTML = (products: Product[], shopName: strin
     </tr>
   `).join('');
 
-    return `
+  return `
     <html>
       <head>
         <style>${reportTemplateStyles}</style>
@@ -258,19 +258,19 @@ export const generateInventoryReportHTML = (products: Product[], shopName: strin
 };
 
 export const generateEmployeePerformanceHTML = (sales: Sale[], cashiers: Cashier[], shopName: string, dateRange: string) => {
-    const performanceData = cashiers.map(cashier => {
-        const cashierSales = sales.filter(s => s.cashierId === cashier.id);
-        const totalAmount = cashierSales.reduce((sum, s) => sum + s.total, 0);
-        return {
-            name: cashier.name,
-            role: cashier.role,
-            count: cashierSales.length,
-            amount: totalAmount,
-            avg: cashierSales.length > 0 ? totalAmount / cashierSales.length : 0
-        };
-    }).sort((a, b) => b.amount - a.amount);
+  const performanceData = cashiers.map(cashier => {
+    const cashierSales = sales.filter(s => s.cashierId === cashier.id);
+    const totalAmount = cashierSales.reduce((sum, s) => sum + s.total, 0);
+    return {
+      name: cashier.name,
+      role: cashier.role,
+      count: cashierSales.length,
+      amount: totalAmount,
+      avg: cashierSales.length > 0 ? totalAmount / cashierSales.length : 0
+    };
+  }).sort((a, b) => b.amount - a.amount);
 
-    const rows = performanceData.map(data => `
+  const rows = performanceData.map(data => `
     <tr>
       <td>${data.name}</td>
       <td>${data.role.toUpperCase()}</td>
@@ -280,7 +280,7 @@ export const generateEmployeePerformanceHTML = (sales: Sale[], cashiers: Cashier
     </tr>
   `).join('');
 
-    return `
+  return `
     <html>
       <head>
         <style>${reportTemplateStyles}</style>
@@ -317,21 +317,21 @@ export const generateEmployeePerformanceHTML = (sales: Sale[], cashiers: Cashier
 
 
 export const generateProductPerformanceHTML = (sales: Sale[], products: Product[], shopName: string, dateRange: string) => {
-    const productStats = products.map(product => {
-        let soldQty = 0;
-        let revenue = 0;
-        sales.forEach(sale => {
-            sale.items.forEach(item => {
-                if (item.product.id === product.id) {
-                    soldQty += item.quantity;
-                    revenue += item.product.price * item.quantity * (1 - item.discount / 100);
-                }
-            });
-        });
-        return { ...product, soldQty, revenue };
-    }).filter(p => p.soldQty > 0).sort((a, b) => b.revenue - a.revenue);
+  const productStats = products.map(product => {
+    let soldQty = 0;
+    let revenue = 0;
+    sales.forEach(sale => {
+      sale.items.forEach(item => {
+        if (item.product.id === product.id) {
+          soldQty += item.quantity;
+          revenue += item.product.price * item.quantity * (1 - item.discount / 100);
+        }
+      });
+    });
+    return { ...product, soldQty, revenue };
+  }).filter(p => p.soldQty > 0).sort((a, b) => b.revenue - a.revenue);
 
-    const rows = productStats.map(p => `
+  const rows = productStats.map(p => `
     <tr>
       <td>${p.sku}</td>
       <td>${p.name}</td>
@@ -341,7 +341,7 @@ export const generateProductPerformanceHTML = (sales: Sale[], products: Product[
     </tr>
   `).join('');
 
-    return `
+  return `
     <html>
       <head>
         <style>${reportTemplateStyles}</style>
@@ -377,15 +377,15 @@ export const generateProductPerformanceHTML = (sales: Sale[], products: Product[
 };
 
 export const generateDailySummaryHTML = (sales: Sale[], shopName: string) => {
-    const today = new Date().toLocaleDateString();
-    const todaySales = sales.filter(s => new Date(s.timestamp).toLocaleDateString() === today);
+  const today = new Date().toLocaleDateString();
+  const todaySales = sales.filter(s => new Date(s.timestamp).toLocaleDateString() === today);
 
-    const totalRevenue = todaySales.reduce((sum, s) => sum + s.total, 0);
-    const cashSales = todaySales.filter(s => s.paymentMethod === 'cash').reduce((sum, s) => sum + s.total, 0);
-    const cardSales = todaySales.filter(s => s.paymentMethod === 'card').reduce((sum, s) => sum + s.total, 0);
-    const creditSales = todaySales.filter(s => s.paymentMethod === 'credit').reduce((sum, s) => sum + s.total, 0);
+  const totalRevenue = todaySales.reduce((sum, s) => sum + s.total, 0);
+  const cashSales = todaySales.filter(s => s.paymentMethod === 'cash').reduce((sum, s) => sum + s.total, 0);
+  const cardSales = todaySales.filter(s => s.paymentMethod === 'card').reduce((sum, s) => sum + s.total, 0);
+  const creditSales = todaySales.filter(s => s.paymentMethod === 'credit').reduce((sum, s) => sum + s.total, 0);
 
-    return `
+  return `
     <html>
       <head>
         <style>${reportTemplateStyles}</style>
@@ -449,15 +449,80 @@ export const generateDailySummaryHTML = (sales: Sale[], shopName: string) => {
   `;
 };
 
+export const generateReturnReportHTML = (returns: ReturnSale[], shopName: string, dateRange: string) => {
+  const totalRefunded = returns.reduce((sum, r) => sum + r.total, 0);
+
+  const rows = returns.map(ret => `
+    <tr>
+      <td>${ret.id}</td>
+      <td>${ret.originalSaleId}</td>
+      <td>${new Date(ret.timestamp).toLocaleString()}</td>
+      <td>${ret.cashierName}</td>
+      <td class="text-right">Rs. ${ret.total.toLocaleString()}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <html>
+      <head>
+        <style>${reportTemplateStyles}</style>
+      </head>
+      <body>
+        <div class="report-header">
+          <h1 class="shop-name">${shopName}</h1>
+          <h2 class="report-title" style="color: #ef4444;">Return & Refund Report</h2>
+          <p class="report-meta">Period: ${dateRange} | Generated: ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card" style="border-left: 4px solid #ef4444;">
+            <div class="stat-label">Total Returns</div>
+            <div class="stat-value">${returns.length}</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid #ef4444;">
+            <div class="stat-label">Total Refunded</div>
+            <div class="stat-value">Rs. ${totalRefunded.toLocaleString()}</div>
+          </div>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Return ID</th>
+              <th>Original Sale</th>
+              <th>Date & Time</th>
+              <th>Cashier</th>
+              <th class="text-right">Refund Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+          <tfoot>
+            <tr class="font-bold">
+              <td colspan="4" class="text-right">TOTAL REFUNDED</td>
+              <td class="text-right" style="color: #ef4444;">Rs. ${totalRefunded.toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+        
+        <div class="footer">
+          <p>Return transaction audit report. End of Report.</p>
+        </div>
+      </body>
+    </html>
+  `;
+};
+
 export const printHTML = (html: string) => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 250);
-    }
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  }
 };

@@ -3,6 +3,7 @@ import { products, categories, Product } from '@/data/demoData';
 import ProductCard from './ProductCard';
 import { Search, Barcode } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useCart } from '@/contexts/CartContext';
 
 interface ProductGridProps {
   onProductSelect: (product: Product) => void;
@@ -13,9 +14,30 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const { t, i18n } = useTranslation();
+  const { isReturnMode, originalItems } = useCart();
+  const [inventoryOverrides, setInventoryOverrides] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const stored = localStorage.getItem('simulated_inventory');
+    if (stored) {
+      setInventoryOverrides(JSON.parse(stored));
+    }
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    let filtered = products;
+    // Apply inventory overrides
+    const productsWithStock = products.map(p => ({
+      ...p,
+      stock: inventoryOverrides[p.id] !== undefined ? inventoryOverrides[p.id] : p.stock
+    }));
+
+    let filtered = productsWithStock;
+
+    // In return mode, only allow original items
+    if (isReturnMode) {
+      const originalIds = originalItems.map(i => i.product.id);
+      filtered = products.filter(p => originalIds.includes(p.id));
+    }
 
     // Filter by category
     if (selectedCategory !== 'all') {
@@ -35,7 +57,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductSelect }) => {
     }
 
     return filtered;
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, searchTerm, isReturnMode, originalItems]);
 
   // Reset focus when filters change
   useEffect(() => {

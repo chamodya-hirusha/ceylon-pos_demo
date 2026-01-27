@@ -4,8 +4,8 @@ import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import ProductGrid from './ProductGrid';
 import CartPanel from './CartPanel';
-import { Product, CartItem } from '@/data/demoData';
-import { LogOut, Pause, Play, Clock, Settings, History as HistoryIcon } from 'lucide-react';
+import { Product, CartItem, ReturnSale } from '@/data/demoData';
+import { LogOut, Pause, Play, Clock, Settings, History as HistoryIcon, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle';
@@ -16,14 +16,14 @@ import { useShortcuts, matchesShortcut } from '@/contexts/ShortcutContext';
 
 const POSScreen: React.FC = () => {
   const { currentUser, logout, userType } = useAuth();
-  const { addItem, holdCart, resumeCart, items, updateQuantity } = useCart();
+  const { addItem, holdCart, resumeCart, items, updateQuantity, isReturnMode, originalSaleId, setReturnMode, originalItems } = useCart();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [heldBills, setHeldBills] = useState<{ items: CartItem[]; time: Date }[]>([]);
   const [showHeldBills, setShowHeldBills] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'cash' | 'card' | 'credit' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'credit' | null>(null);
   const [showInvoice, setShowInvoice] = useState(false);
   const [lastSaleSnapshot, setLastSaleSnapshot] = useState<{ items: CartItem[]; subtotal: number; tax: number; total: number } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -67,7 +67,7 @@ const POSScreen: React.FC = () => {
 
       // Payment Methods (only when showPayment is true)
       if (showPayment) {
-        if (matchesShortcut(e, shortcuts.cash)) setSelectedMethod('cash');
+        if (matchesShortcut(e, shortcuts.cash)) setPaymentMethod('cash');
         if (matchesShortcut(e, shortcuts.card)) {
           onCompleteSale('card');
           setShowInvoice(true);
@@ -159,9 +159,29 @@ const POSScreen: React.FC = () => {
   }, [items, showPayment, showHeldBills, showShortcuts]);
 
   const handleProductSelect = (product: Product) => {
+    // In Return Mode, allow searching and adding items from the original invoice
+    if (isReturnMode) {
+      // Check if this product was in the original sale
+      const originalItem = originalItems.find(i => i.product.id === product.id);
+
+      if (!originalItem) {
+        // Product not in original sale - show error
+        toast.error('Cannot add this item in Return Mode', {
+          description: 'Only items from the original invoice can be returned.'
+        });
+        return;
+      }
+    }
+
+    // Add item to cart (CartContext has validation for return mode)
     addItem(product);
     const productName = i18n.language.startsWith('si') && product.nameSinhala ? product.nameSinhala : product.name;
-    toast.success(t('added_to_cart', { name: productName }), { duration: 1500 });
+
+    if (isReturnMode) {
+      toast.success(`Added to Return: ${productName}`, { duration: 1500 });
+    } else {
+      toast.success(t('added_to_cart', { name: productName }), { duration: 1500 });
+    }
   };
 
   const handleHoldBill = () => {
@@ -188,10 +208,81 @@ const POSScreen: React.FC = () => {
     // Take snapshot for invoice
     setLastSaleSnapshot({ items: [...items], subtotal, tax, total });
 
-    toast.success(`Sale completed! Total: Rs. ${total.toLocaleString()}`, {
-      description: `Payment method: ${method.toUpperCase()}`,
-    });
-    clearCart();
+    if (isReturnMode) {
+      // ===== RETURN PROCESSING RULES =====
+      // 1. Each invoice can be returned only once
+      // 2. When a return is confirmed:
+      //    - Create a separate return record (do not modify the original sale invoice)
+      //    - Update the invoice status to "Returned" (lock it)
+      //    - Restore returned item quantities back to inventory
+      // 3. Returned invoices become:
+      //    - Read-only
+      //    - Non-editable
+      //    - Non-returnable again
+
+      // 1. Create Return Record (separate from original sale)
+      const returnRecord: ReturnSale = {
+        id: `RET-${Math.floor(1000 + Math.random() * 9000)}`,
+        originalSaleId: originalSaleId!,
+        items: [...items],
+        subtotal,
+        tax,
+        total,
+        cashierId: currentUser?.id || 'C001',
+        cashierName: currentUser?.name || 'Cashier',
+        timestamp: new Date(),
+        reason: 'Customer Return'
+      };
+
+      // 2. Save Return Transaction (do not modify original sale)
+      const existingReturnTransactions = JSON.parse(localStorage.getItem('simulated_return_transactions') || '[]');
+      localStorage.setItem('simulated_return_transactions', JSON.stringify([...existingReturnTransactions, returnRecord]));
+
+      // 3. Update Invoice Status to "Returned" (Lock it - makes it read-only and non-returnable)
+      const existingReturns = JSON.parse(localStorage.getItem('simulated_returns') || '[]');
+      if (originalSaleId && !existingReturns.includes(originalSaleId)) {
+        localStorage.setItem('simulated_returns', JSON.stringify([...existingReturns, originalSaleId]));
+      }
+
+      // 4. Restore Inventory
+      const currentInventory = JSON.parse(localStorage.getItem('simulated_inventory') || '{}');
+      items.forEach(item => {
+        // If product not in local inventory yet, assumes it starts at demoData stock. 
+        // Ideally we would read from demoData but here we just store the OVERRIDES or current state.
+        // Simple approach: Let's assume we just store the NEW total.
+        // Since we can't easily access the original stock here without looking it up from products array:
+        const currentStock = currentInventory[item.product.id] ?? item.product.stock;
+        currentInventory[item.product.id] = currentStock + item.quantity;
+      });
+      localStorage.setItem('simulated_inventory', JSON.stringify(currentInventory));
+
+      toast.success(`Return Processed Successfully!`, {
+        description: `Refund Issued: Rs. ${total.toLocaleString()}`,
+      });
+    } else {
+      toast.success(`Sale completed! Total: Rs. ${total.toLocaleString()}`, {
+        description: `Payment method: ${method.toUpperCase()}`,
+      });
+
+      // Simulate saving new sale
+      const newSale = {
+        id: `SALE-${Math.floor(10000 + Math.random() * 90000)}`,
+        items: [...items],
+        subtotal,
+        discount: 0,
+        tax,
+        total,
+        paymentMethod: method,
+        cashierId: currentUser?.id || 'C001',
+        cashierName: currentUser?.name || 'Cashier',
+        timestamp: new Date().toISOString(), // Store as string for JSON
+      };
+
+      const existingSales = JSON.parse(localStorage.getItem('simulated_sales') || '[]');
+      localStorage.setItem('simulated_sales', JSON.stringify([newSale, ...existingSales]));
+    }
+
+    clearCart(); // This also clears return mode
     setShowPayment(false);
   };
 
@@ -211,6 +302,22 @@ const POSScreen: React.FC = () => {
               </p>
             </div>
           </div>
+          {isReturnMode && (
+            <div className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-xl animate-pulse shadow-lg shadow-orange-500/20">
+              <RefreshCcw className="w-5 h-5" />
+              <div className="leading-tight">
+                <p className="text-xs font-bold uppercase tracking-tighter">Return Mode</p>
+                <p className="text-[10px] opacity-90 font-mono">#{originalSaleId}</p>
+              </div>
+              <button
+                onClick={() => setReturnMode(null)}
+                className="ml-2 p-1 hover:bg-white/20 rounded-lg transition-colors"
+                title="Cancel Return Mode"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -283,12 +390,12 @@ const POSScreen: React.FC = () => {
             showPayment={showPayment}
             setShowPayment={(show) => {
               setShowPayment(show);
-              if (!show) setSelectedMethod(null);
+              if (!show) setPaymentMethod(null);
             }}
-            selectedMethod={selectedMethod}
-            onSelectMethod={setSelectedMethod}
+            selectedMethod={paymentMethod}
+            onSelectMethod={setPaymentMethod}
             onPrint={() => items.length > 0 && setShowInvoice(true)}
-            onCompleteSale={onCompleteSale}
+            onComplete={onCompleteSale}
           />
         </div>
       </div>

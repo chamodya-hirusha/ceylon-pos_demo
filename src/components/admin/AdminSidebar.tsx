@@ -13,6 +13,8 @@ import {
   Boxes,
   Receipt,
   X,
+  RefreshCcw,
+  Undo2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle';
@@ -23,6 +25,7 @@ const menuItems = [
   { path: '/admin/products', icon: Package, labelKey: 'products' },
   { path: '/admin/inventory', icon: Boxes, labelKey: 'inventory' },
   { path: '/admin/sales', icon: Receipt, labelKey: 'sales_history' },
+  { path: '/admin/return-history', icon: Undo2, labelKey: 'return_history' },
   { path: '/admin/reports', icon: BarChart3, labelKey: 'reports' },
   { path: '/admin/employee', icon: Users, labelKey: 'employee' },
   { path: '/admin/settings', icon: Settings, labelKey: 'settings' },
@@ -33,7 +36,7 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ onClose }) => {
-  const { logout } = useAuth();
+  const { logout, userType } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -69,7 +72,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ onClose }) => {
         <div className="px-3 mb-2">
           <span className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-[0.2em]">Main Menu</span>
         </div>
-        {menuItems.map((item) => (
+        {menuItems.filter(item => {
+          if (userType === 'cashier') {
+            return !['reports', 'employee', 'settings'].includes(item.labelKey);
+          }
+          return true;
+        }).map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

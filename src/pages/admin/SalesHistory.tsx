@@ -1,14 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { generateDemoSales, Sale } from '@/data/demoData';
-import { Search, Calendar, Download, Eye, Receipt, FileText, ShoppingBag, DollarSign, Wallet, CreditCard as CardIcon } from 'lucide-react';
+import { generateDemoSales, generateDemoReturns, Sale } from '@/data/demoData';
+import { Search, Calendar, Download, Eye, Receipt, FileText, ShoppingBag, DollarSign, Wallet, CreditCard as CardIcon, RefreshCcw, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useShop } from '@/contexts/ShopContext';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import InvoiceModal from '@/components/pos/InvoiceModal';
 
 const SalesHistory: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { setReturnMode } = useCart();
+  const { userType, currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -44,10 +51,64 @@ const SalesHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const sales = useMemo(() => generateDemoSales(), []);
+  const [allSales, setAllSales] = useState<Sale[]>([]);
+
+  React.useEffect(() => {
+    const demoSales = generateDemoSales();
+    const storedSales = localStorage.getItem('simulated_sales');
+    let combinedSales = demoSales;
+
+    if (storedSales) {
+      const parsedSales = JSON.parse(storedSales).map((s: any) => ({
+        ...s,
+        timestamp: new Date(s.timestamp)
+      }));
+      combinedSales = [...parsedSales, ...demoSales];
+    }
+    setAllSales(combinedSales);
+  }, []);
+
+  const sales = useMemo(() => allSales, [allSales]);
+  const returns = useMemo(() => generateDemoReturns(sales), [sales]);
+
+  const [simulatedReturns, setSimulatedReturns] = useState<string[]>([]);
+
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const stored = localStorage.getItem('simulated_returns');
+    if (stored) {
+      setSimulatedReturns(JSON.parse(stored));
+    }
+  }, [location]);
+
+  // ===== SALES HISTORY STATUS LOGIC =====
+  // 1. Display "Returned" status ONLY for invoices that have a completed return record
+  // 2. Invoices that have not been returned must NEVER be marked as Returned
+  // 3. Do not auto-update or assume return status based on UI actions alone
+
+  // Check if an invoice has been returned
+  const isInvoiceReturned = (saleId: string): boolean => {
+    // Check if this sale ID is in the simulated_returns list
+    // This list contains IDs of invoices that have completed return transactions
+    return simulatedReturns.includes(saleId);
+  };
+
+  const getReturnStatus = (saleId: string): 'returned' | 'completed' => {
+    // Only mark as returned if there's a completed return record
+    if (isInvoiceReturned(saleId)) {
+      return 'returned';
+    }
+    return 'completed';
+  };
 
   const filteredSales = useMemo(() => {
     let filtered = sales;
+
+    // Filter by Cashier if user is a cashier
+    if (userType === 'cashier' && currentUser) {
+      filtered = filtered.filter((s) => s.cashierName === currentUser.name);
+    }
 
     // Date Range Filter
     if (startDate || endDate) {
@@ -73,7 +134,7 @@ const SalesHistory: React.FC = () => {
     }
 
     return filtered;
-  }, [sales, searchTerm, paymentFilter, startDate, endDate]);
+  }, [sales, searchTerm, paymentFilter, startDate, endDate, userType, currentUser]);
 
   const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
 
@@ -93,17 +154,37 @@ const SalesHistory: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('sales_history')}</h1>
-          <p className="text-muted-foreground">{t('sales_transactions')}</p>
+        <div className="flex items-center gap-4">
+          {userType === 'cashier' && (
+            <button
+              onClick={() => navigate('/pos')}
+              className="p-2 rounded-xl hover:bg-muted transition-colors flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium hidden sm:inline">{t('back_to_pos')}</span>
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t('sales_history')}</h1>
+            <p className="text-muted-foreground">{t('sales_transactions')}</p>
+          </div>
         </div>
-        <button
-          onClick={exportPDF}
-          className="pos-btn-secondary flex items-center gap-2"
-        >
-          <Download className="w-5 h-5" />
-          {t('export_report')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(userType === 'cashier' ? '/pos/returns' : '/admin/return-history')}
+            className="pos-btn-secondary flex items-center gap-2"
+          >
+            <RefreshCcw className="w-5 h-5" />
+            View Returns
+          </button>
+          <button
+            onClick={exportPDF}
+            className="pos-btn-secondary flex items-center gap-2"
+          >
+            <Download className="w-5 h-5" />
+            {t('export_report')}
+          </button>
+        </div>
       </div>
 
       <div id="sales-export-content" className="bg-background p-1">
@@ -208,7 +289,8 @@ const SalesHistory: React.FC = () => {
                   <th>{t('cashier')}</th>
                   <th>{t('items')}</th>
                   <th>{t('total')}</th>
-                  <th>{t('action')}</th>
+                  <th>Status</th>
+                  <th className="text-right">{t('action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,7 +305,18 @@ const SalesHistory: React.FC = () => {
                     <td className="text-muted-foreground">{sale.items.length} {t('items')}</td>
                     <td className="font-bold text-foreground">Rs. {sale.total.toLocaleString()}</td>
                     <td>
-                      <div className="flex items-center gap-2">
+                      {getReturnStatus(sale.id) === 'returned' ? (
+                        <span className="pos-badge bg-destructive/10 text-destructive border-destructive/20 rounded-lg px-2 py-1 text-xs font-medium">
+                          Returned
+                        </span>
+                      ) : (
+                        <span className="pos-badge bg-success/10 text-success border-success/20 rounded-lg px-2 py-1 text-xs font-medium">
+                          Completed
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-end gap-2">
                         <span
                           className={`pos-badge text-[10px] ${sale.paymentMethod === 'cash'
                             ? 'pos-badge-success'
@@ -240,6 +333,28 @@ const SalesHistory: React.FC = () => {
                           title="View Details"
                         >
                           <FileText className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Prevent return if already returned
+                            if (isInvoiceReturned(sale.id)) {
+                              toast.error('Invoice Already Returned', {
+                                description: 'This invoice has already been returned and cannot be returned again.'
+                              });
+                              return;
+                            }
+                            setReturnMode(sale);
+                            toast.success(`Entering Return Mode for Bill ${sale.id}`);
+                            navigate('/pos');
+                          }}
+                          disabled={isInvoiceReturned(sale.id)}
+                          className={`p-2 rounded-lg transition-colors ${isInvoiceReturned(sale.id)
+                            ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
+                            : 'hover:bg-orange-500/10 text-orange-500'
+                            }`}
+                          title={isInvoiceReturned(sale.id) ? "Already Returned" : "Return Items"}
+                        >
+                          <RefreshCcw className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

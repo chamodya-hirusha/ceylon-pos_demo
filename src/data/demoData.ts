@@ -56,6 +56,19 @@ export interface Sale {
   customerId?: string;
 }
 
+export interface ReturnSale {
+  id: string;
+  originalSaleId: string;
+  items: CartItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  cashierId: string;
+  cashierName: string;
+  reason?: string;
+  timestamp: Date;
+}
+
 export const categories: Category[] = [
   { id: 'all', name: 'All Products', nameSinhala: 'සියලු භාණ්ඩ', icon: '📦', color: '#4DA3FF' },
   { id: 'building', name: 'Building Materials', nameSinhala: 'ගොඩනැගිලි ද්‍රව්‍ය', icon: '🏗️', color: '#6B7280' },
@@ -199,4 +212,38 @@ export const generateDemoSales = (): Sale[] => {
   }
 
   return sales.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+};
+
+export const generateDemoReturns = (sales: Sale[]): ReturnSale[] => {
+  const returns: ReturnSale[] = [];
+  const now = new Date();
+
+  // Generate returns for about 10% of sales
+  const salesToReturn = sales.slice(0, 5);
+
+  salesToReturn.forEach((sale, i) => {
+    // Partial return: take the first item
+    const returnedItems = [sale.items[0]];
+    const subtotal = returnedItems.reduce((sum, item) => {
+      const itemTotal = item.product.price * item.quantity;
+      const itemDiscount = itemTotal * (item.discount / 100);
+      return sum + (itemTotal - itemDiscount);
+    }, 0);
+    const tax = subtotal * 0.08;
+    const total = subtotal + tax;
+
+    returns.push({
+      id: `RET-${String(i + 1).padStart(5, '0')}`,
+      originalSaleId: sale.id,
+      items: returnedItems,
+      subtotal,
+      tax,
+      total,
+      cashierId: sale.cashierId,
+      cashierName: sale.cashierName,
+      timestamp: new Date(sale.timestamp.getTime() + 86400000), // 1 day later
+    });
+  });
+
+  return returns;
 };
