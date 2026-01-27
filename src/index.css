@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    --primary: 207 100% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 25% 25%;
+
+    --muted: 210 15% 94%;
+    --muted-foreground: 215 15% 50%;
+
+    --accent: 207 100% 95%;
+    --accent-foreground: 207 100% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 207 100% 65%;
+
+    --radius: 0.75rem;
+
+    /* POS specific tokens */
+    --pos-sidebar: 215 25% 12%;
+    --pos-sidebar-foreground: 210 20% 95%;
+    --pos-header: 0 0% 100%;
+    --pos-cart: 0 0% 100%;
+    --pos-product-card: 0 0% 100%;
+    --pos-category-active: 207 100% 65%;
+    --pos-button-lg: 207 100% 65%;
+    --pos-success-bg: 142 76% 95%;
+    --pos-warning-bg: 38 92% 95%;
+    --pos-danger-bg: 0 84% 95%;
+
+    --sidebar-background: 215 25% 12%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 207 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 20%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 25% 20%;
+    --sidebar-ring: 207 100% 65%;
+  }
+
+  .dark {
+    --background: 215 25% 10%;
+    --foreground: 210 20% 95%;
+    --card: 215 25% 12%;
+    --card-foreground: 210 20% 95%;
+    --popover: 215 25% 12%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 207 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 215 25% 20%;
+    --muted-foreground: 210 15% 60%;
+    --accent: 207 100% 20%;
+    --accent-foreground: 207 100% 80%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 207 100% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Touch-friendly base styles */
+  button,
+  [role="button"] {
+    @apply touch-manipulation;
+  }
+}
+
+@layer components {
+
+  /* POS specific component styles */
+  .pos-card {
+    @apply bg-card rounded-xl shadow-sm border border-border/50 transition-all duration-200;
+  }
+
+  .pos-card-hover {
+    @apply pos-card hover:shadow-md hover:border-primary/30 hover:scale-[1.02] cursor-pointer;
+  }
+
+  .pos-btn-primary {
+    @apply bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 active:scale-95;
+  }
+
+  .pos-btn-secondary {
+    @apply bg-secondary text-secondary-foreground font-medium py-3 px-6 rounded-xl border border-border hover:bg-muted transition-all duration-200 active:scale-95;
+  }
+
+  .pos-btn-success {
+    @apply bg-success text-success-foreground font-semibold py-3 px-6 rounded-xl shadow-lg shadow-success/25 hover:shadow-xl transition-all duration-200 active:scale-95;
+  }
+
+  .pos-btn-danger {
+    @apply bg-destructive text-destructive-foreground font-semibold py-3 px-6 rounded-xl shadow-lg shadow-destructive/25 hover:shadow-xl transition-all duration-200 active:scale-95;
+  }
+
+  .pos-input {
+    @apply w-full bg-background border-2 border-border rounded-xl py-3 px-4 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 outline-none;
+  }
+
+  .pos-sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200 cursor-pointer;
+  }
+
+  .pos-sidebar-item-active {
+    @apply pos-sidebar-item bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground;
+  }
+
+  .pos-category-btn {
+    @apply px-4 py-2.5 rounded-xl font-medium text-sm border-2 border-transparent bg-secondary text-secondary-foreground hover:border-primary/30 transition-all duration-200;
+  }
+
+  .pos-category-btn-active {
+    @apply px-4 py-2.5 rounded-xl font-medium text-sm bg-primary text-primary-foreground shadow-lg shadow-primary/25;
+  }
+
+  .pos-product-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3;
+  }
+
+  .pos-keypad-btn {
+    @apply w-16 h-16 rounded-2xl bg-secondary text-foreground font-bold text-2xl flex items-center justify-center hover:bg-muted active:scale-95 transition-all duration-150 shadow-sm;
+  }
+
+  .pos-keypad-btn-primary {
+    @apply pos-keypad-btn bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .pos-stat-card {
+    @apply pos-card p-6 flex flex-col gap-2;
+  }
+
+  .pos-table {
+    @apply w-full border-collapse;
+  }
+
+  .pos-table th {
+    @apply text-left py-3 px-4 bg-muted/50 text-muted-foreground font-semibold text-sm first:rounded-tl-xl last:rounded-tr-xl;
+  }
+
+  .pos-table td {
+    @apply py-3 px-4 border-b border-border/50;
+  }
+
+  .pos-table tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  .pos-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .pos-badge-success {
+    @apply pos-badge bg-success/10 text-success;
+  }
+
+  .pos-badge-warning {
+    @apply pos-badge bg-warning/10 text-warning;
+  }
+
+  .pos-badge-danger {
+    @apply pos-badge bg-destructive/10 text-destructive;
+  }
+
+  .pos-badge-primary {
+    @apply pos-badge bg-primary/10 text-primary;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
