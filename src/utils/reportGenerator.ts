@@ -531,14 +531,46 @@ export const generateReturnReportHTML = (returns: ReturnSale[], shopName: string
 };
 
 export const printHTML = (html: string) => {
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 250);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  
+  // Create a temporary link and click it to open in a new tab
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  
+  // For mobile, we just open the tab. For desktop, we try to trigger print.
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    link.click();
+    // Clean up the URL after a delay
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } else {
+    // Desktop behavior: try to print
+    const printWindow = window.open(url, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        // Optional: printWindow.close(); 
+      };
+    } else {
+      // Fallback if window.open was blocked
+      link.click();
+    }
   }
+};
+
+export const downloadHTML = (html: string, fileName: string) => {
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${fileName}.html`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };

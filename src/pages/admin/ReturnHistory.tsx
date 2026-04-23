@@ -184,25 +184,25 @@ const ReturnHistory: React.FC = () => {
                             />
                         </div>
 
-                        <div className="flex items-center gap-2 w-full lg:w-auto">
+                        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full lg:w-auto">
                             <div className="relative flex-1">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="pos-input pl-9 h-11 w-full sm:w-36 text-[11px]"
+                                    className="pos-input pl-9 h-11 w-full sm:w-36 text-xs lg:text-[11px]"
                                     title="Start Date"
                                 />
                             </div>
-                            <span className="text-muted-foreground text-[10px] font-bold shrink-0">TO</span>
+                            <div className="hidden xs:block text-muted-foreground text-[10px] font-bold shrink-0">TO</div>
                             <div className="relative flex-1">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="date"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="pos-input pl-9 h-11 w-full sm:w-36 text-[11px]"
+                                    className="pos-input pl-9 h-11 w-full sm:w-36 text-xs lg:text-[11px]"
                                     title="End Date"
                                 />
                             </div>
