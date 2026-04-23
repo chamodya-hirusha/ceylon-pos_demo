@@ -66,7 +66,7 @@ const Employees: React.FC = () => {
   };
 
   return (
-    <div className="p-4 lg:p-6">
+    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 mt-2 lg:mt-0">
         <div>
@@ -75,7 +75,7 @@ const Employees: React.FC = () => {
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="pos-btn-primary flex items-center justify-center gap-2 py-3 sm:py-2.5 px-6"
+          className="pos-btn-primary flex items-center justify-center gap-2 py-3.5 px-6 w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           <span className="font-bold">Add Employee</span>
@@ -83,7 +83,7 @@ const Employees: React.FC = () => {
       </div>
 
       {/* Employee Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {currentEmployees.map((cashier) => (
           <div key={cashier.id} className="pos-card p-6 group hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5">
             <div className="flex items-start justify-between mb-6">
@@ -175,8 +175,8 @@ const Employees: React.FC = () => {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`w-10 h-10 rounded-xl font-bold transition-all ${currentPage === page
-                ? 'bg-primary text-primary-foreground shadow-pos-primary scale-110'
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl font-bold transition-all ${currentPage === page
+                ? 'bg-primary text-primary-foreground shadow-lg scale-110'
                 : 'bg-card text-muted-foreground hover:bg-muted'
                 }`}
             >
@@ -188,18 +188,18 @@ const Employees: React.FC = () => {
 
       {/* Add Employee Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-card rounded-3xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+            <div className="p-5 sm:p-6 border-b border-border flex justify-between items-center bg-muted/30 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground leading-none">
                     {editingEmployee ? 'Edit Employee Profile' : 'Enroll New Employee'}
                   </h2>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                     {editingEmployee ? `Modifying access for ${editingEmployee.name}` : 'Fill in the professional details below'}
                   </p>
                 </div>
@@ -217,7 +217,7 @@ const Employees: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleFormSubmit} className="p-5 sm:p-6 space-y-6 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Info */}
                 <div className="space-y-4">

@@ -90,7 +90,7 @@ const Products: React.FC = () => {
   };
 
   return (
-    <div className="p-4 lg:p-6">
+    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 mt-2 lg:mt-0">
         <div>
@@ -99,7 +99,7 @@ const Products: React.FC = () => {
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="pos-btn-primary flex items-center justify-center gap-2 py-3 sm:py-2.5 px-6"
+          className="pos-btn-primary flex items-center justify-center gap-2 py-3.5 px-6 w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           <span className="font-bold">{t('add_product')}</span>
@@ -108,10 +108,10 @@ const Products: React.FC = () => {
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-card rounded-3xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+            <div className="p-5 sm:p-6 border-b border-border flex justify-between items-center bg-muted/30 shrink-0">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
                 {editingProduct ? <Edit2 className="w-5 h-5 text-primary" /> : <Plus className="w-5 h-5 text-primary" />}
                 {editingProduct ? 'Edit Product' : t('add_product')}
               </h2>
@@ -128,10 +128,10 @@ const Products: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Product Name</label>
+            <form onSubmit={handleFormSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">Product Name</label>
                   <input
                     required
                     type="text"
@@ -142,7 +142,7 @@ const Products: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">SKU / Code</label>
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">SKU / Code</label>
                   <input
                     required
                     type="text"
@@ -153,7 +153,7 @@ const Products: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Barcode</label>
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">Barcode</label>
                   <div className="relative">
                     <input
                       required
@@ -174,11 +174,11 @@ const Products: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Category</label>
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">Category</label>
                   <select
                     value={newProduct.category}
                     onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
-                    className="pos-input"
+                    className="pos-input h-[52px]"
                   >
                     {categories.slice(1).map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -186,7 +186,7 @@ const Products: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Price (LKR)</label>
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">Price (LKR)</label>
                   <input
                     required
                     type="number"
@@ -197,7 +197,7 @@ const Products: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Initial Stock</label>
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">Initial Stock</label>
                   <input
                     required
                     type="number"
@@ -207,16 +207,16 @@ const Products: React.FC = () => {
                     placeholder="0"
                   />
                 </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Unit of Measure</label>
-                  <div className="flex gap-2">
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold mb-1.5 block text-muted-foreground uppercase">Unit of Measure</label>
+                  <div className="flex flex-wrap gap-2">
                     {['pcs', 'kg', 'ft', 'ltr', 'meter'].map(u => (
                       <button
                         key={u}
                         type="button"
                         onClick={() => setNewProduct({ ...newProduct, unit: u as any })}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all ${newProduct.unit === u
-                          ? 'bg-primary text-primary-foreground shadow-pos-primary'
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all flex-1 sm:flex-none min-w-[70px] ${newProduct.unit === u
+                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                           }`}
                       >
@@ -255,7 +255,7 @@ const Products: React.FC = () => {
       <div className="pos-card p-4 mb-6 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
-          <div className="flex-1 relative group">
+          <div className="flex-1 relative group order-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
@@ -266,7 +266,7 @@ const Products: React.FC = () => {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 order-2">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -279,7 +279,7 @@ const Products: React.FC = () => {
               ))}
             </select>
 
-            <button className="pos-btn-secondary h-12 lg:h-11 flex items-center justify-center gap-2 px-6">
+            <button className="pos-btn-secondary h-12 lg:h-11 flex items-center justify-center gap-2 px-6 w-full sm:w-auto">
               <Download className="w-5 h-5" />
               <span className="font-bold">{t('export')}</span>
             </button>
@@ -368,39 +368,39 @@ const Products: React.FC = () => {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground order-2 sm:order-1">
+          <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4">
+            <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
               {t('showing_products', {
                 count: currentProducts.length,
                 total: filteredProducts.length
               })}
             </p>
-            <div className="flex items-center gap-2 order-1 sm:order-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 order-1 sm:order-2 w-full sm:w-auto justify-center">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
               >
-                Previous
+                Prev
               </button>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 overflow-x-auto max-w-[150px] sm:max-w-none scrollbar-none">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-10 h-10 rounded-xl font-medium transition-all ${currentPage === page
-                      ? 'bg-primary text-primary-foreground shadow-lg active:scale-95'
+                    className={`min-w-[32px] sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${currentPage === page
+                      ? 'bg-primary text-primary-foreground shadow-lg'
                       : 'hover:bg-muted text-muted-foreground'
                       }`}
                   >
                     {page}
                   </button>
-                )).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2))}
+                ))}
               </div>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
               >
                 Next
               </button>

@@ -45,84 +45,84 @@ const Inventory: React.FC = () => {
   const outOfStockCount = products.filter((p) => p.stock === 0).length;
 
   return (
-    <div className="p-6">
+    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 mt-2 lg:mt-0">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Inventory Management</h1>
-          <p className="text-muted-foreground">Track stock levels and manage inventory</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-1">Inventory Management</h1>
+          <p className="text-sm lg:text-base text-muted-foreground">Track stock levels and manage inventory</p>
         </div>
-        <div className="flex gap-2">
-          <button className="pos-btn-secondary flex items-center gap-2">
+        <div className="flex gap-2 sm:gap-3">
+          <button className="pos-btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-2 py-3 px-4">
             <ArrowDown className="w-5 h-5" />
-            Stock In
+            <span className="font-bold">Stock In</span>
           </button>
-          <button className="pos-btn-secondary flex items-center gap-2">
+          <button className="pos-btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-2 py-3 px-4">
             <ArrowUp className="w-5 h-5" />
-            Stock Out
+            <span className="font-bold">Stock Out</span>
           </button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="pos-stat-card">
-          <p className="text-sm text-muted-foreground">Total Products</p>
-          <p className="text-2xl font-bold text-foreground">{products.length}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-8">
+        <div className="pos-stat-card p-4">
+          <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Total Products</p>
+          <p className="text-xl lg:text-2xl font-black text-foreground mt-2">{products.length}</p>
         </div>
-        <div className="pos-stat-card">
-          <p className="text-sm text-muted-foreground">Inventory Value</p>
-          <p className="text-2xl font-bold text-primary">Rs. {totalValue.toLocaleString()}</p>
+        <div className="pos-stat-card p-4">
+          <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Inventory Value</p>
+          <p className="text-xl lg:text-2xl font-black text-primary mt-2">Rs. {totalValue.toLocaleString()}</p>
         </div>
-        <div className="pos-stat-card border-warning/30 bg-warning/5">
+        <div className="pos-stat-card p-4 border-warning/30 bg-warning/5">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-warning" />
-            <p className="text-sm text-muted-foreground">Low Stock</p>
+            <AlertTriangle className="w-4 h-4 text-warning" />
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Low Stock</p>
           </div>
-          <p className="text-2xl font-bold text-warning">{lowStockCount}</p>
+          <p className="text-xl lg:text-2xl font-black text-warning mt-2">{lowStockCount}</p>
         </div>
-        <div className="pos-stat-card border-destructive/30 bg-destructive/5">
+        <div className="pos-stat-card p-4 border-destructive/30 bg-destructive/5">
           <div className="flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-destructive" />
-            <p className="text-sm text-muted-foreground">Out of Stock</p>
+            <TrendingDown className="w-4 h-4 text-destructive" />
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Out of Stock</p>
           </div>
-          <p className="text-2xl font-bold text-destructive">{outOfStockCount}</p>
+          <p className="text-xl lg:text-2xl font-black text-destructive mt-2">{outOfStockCount}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="pos-card p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="pos-card p-4 mb-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <div className="flex-1 relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search products..."
-              className="pos-input pl-12"
+              placeholder="Search inventory..."
+              className="pos-input pl-12 h-12 lg:h-11"
             />
           </div>
 
           {/* Stock Filter */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 lg:pb-0">
             <button
               onClick={() => setStockFilter('all')}
-              className={stockFilter === 'all' ? 'pos-category-btn-active' : 'pos-category-btn'}
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all whitespace-nowrap ${stockFilter === 'all' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
             >
               All
             </button>
             <button
               onClick={() => setStockFilter('low')}
-              className={stockFilter === 'low' ? 'pos-category-btn-active' : 'pos-category-btn'}
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all whitespace-nowrap flex items-center gap-2 ${stockFilter === 'low' ? 'bg-warning text-warning-foreground shadow-lg shadow-warning/25' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
             >
-              <AlertTriangle className="w-4 h-4 mr-1" />
+              <AlertTriangle className="w-4 h-4" />
               Low Stock
             </button>
             <button
               onClick={() => setStockFilter('out')}
-              className={stockFilter === 'out' ? 'pos-category-btn-active' : 'pos-category-btn'}
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all whitespace-nowrap ${stockFilter === 'out' ? 'bg-destructive text-destructive-foreground shadow-lg shadow-destructive/25' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
             >
               Out of Stock
             </button>
@@ -202,36 +202,36 @@ const Inventory: React.FC = () => {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground order-2 sm:order-1">
-              Showing {currentProducts.length} of {filteredProducts.length} products
+          <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4">
+            <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
+              Showing {currentProducts.length} of {filteredProducts.length} items
             </p>
-            <div className="flex items-center gap-2 order-1 sm:order-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 order-1 sm:order-2 w-full sm:w-auto justify-center">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
               >
-                Previous
+                Prev
               </button>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 overflow-x-auto max-w-[150px] sm:max-w-none scrollbar-none">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-10 h-10 rounded-xl font-medium transition-all ${currentPage === page
-                        ? 'bg-primary text-primary-foreground shadow-lg active:scale-95'
-                        : 'hover:bg-muted text-muted-foreground'
+                    className={`min-w-[32px] sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${currentPage === page
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'hover:bg-muted text-muted-foreground'
                       }`}
                   >
                     {page}
                   </button>
-                )).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2))}
+                ))}
               </div>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
               >
                 Next
               </button>

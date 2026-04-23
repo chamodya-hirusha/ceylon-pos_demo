@@ -110,13 +110,13 @@ const ReturnHistory: React.FC = () => {
     };
 
     return (
-        <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="p-4 lg:p-6 pb-24 lg:pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 mt-2 lg:mt-0">
                 <div className="flex items-center gap-4">
                     {userType === 'cashier' ? (
                         <button
                             onClick={() => navigate('/pos')}
-                            className="p-2 rounded-xl hover:bg-muted transition-colors flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                            className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors flex items-center gap-2 text-muted-foreground hover:text-foreground"
                         >
                             <ArrowLeft className="w-5 h-5" />
                             <span className="font-medium hidden sm:inline">Back to POS</span>
@@ -124,80 +124,88 @@ const ReturnHistory: React.FC = () => {
                     ) : (
                         <button
                             onClick={() => navigate(-1)}
-                            className="p-2 rounded-xl hover:bg-muted transition-colors"
+                            className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                     )}
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Return Bills / Credit Notes</h1>
-                        <p className="text-muted-foreground">Manage and track all returned transactions</p>
+                        <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-1">Return Bills</h1>
+                        <p className="text-sm lg:text-base text-muted-foreground">Manage and track all returned transactions</p>
                     </div>
                 </div>
                 <button
                     onClick={exportPDF}
-                    className="pos-btn-secondary flex items-center gap-2"
+                    className="pos-btn-secondary flex items-center justify-center gap-2 py-3.5 px-6 w-full sm:w-auto"
                 >
                     <Download className="w-5 h-5" />
-                    Export Report
+                    <span className="font-bold">Export Report</span>
                 </button>
             </div>
 
             <div id="returns-export-content">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="pos-stat-card border-l-4 border-l-orange-500">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-8">
+                    <div className="pos-stat-card p-4 border-l-4 border-l-orange-500">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm text-muted-foreground font-medium">Total Returns</p>
-                            <ShoppingBag className="w-4 h-4 text-orange-500" />
+                            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Total Returns</p>
+                            <ShoppingBag className="w-4 h-4 text-orange-500 opacity-50" />
                         </div>
-                        <p className="text-2xl font-bold text-foreground">{filteredReturns.length}</p>
+                        <p className="text-xl lg:text-2xl font-black text-foreground">{filteredReturns.length}</p>
                     </div>
-                    <div className="pos-stat-card border-l-4 border-l-destructive">
+                    <div className="pos-stat-card p-4 border-l-4 border-l-destructive">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm text-muted-foreground font-medium">Total Refunded</p>
-                            <Receipt className="w-4 h-4 text-destructive" />
+                            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Total Refunded</p>
+                            <Receipt className="w-4 h-4 text-destructive opacity-50" />
                         </div>
-                        <p className="text-2xl font-bold text-destructive">Rs. {totalRefundAmount.toLocaleString()}</p>
+                        <p className="text-xl lg:text-2xl font-black text-destructive truncate">Rs. {totalRefundAmount.toLocaleString()}</p>
                     </div>
-                    <div className="pos-stat-card border-l-4 border-l-primary">
+                    <div className="pos-stat-card p-4 border-l-4 border-l-primary col-span-2 lg:col-span-1">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm text-muted-foreground font-medium">Avg. Refund</p>
-                            <FileText className="w-4 h-4 text-primary" />
+                            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Avg. Refund</p>
+                            <FileText className="w-4 h-4 text-primary opacity-50" />
                         </div>
-                        <p className="text-2xl font-bold text-primary">
+                        <p className="text-xl lg:text-2xl font-black text-primary truncate">
                             Rs. {filteredReturns.length > 0 ? (totalRefundAmount / filteredReturns.length).toLocaleString(undefined, { maximumFractionDigits: 0 }) : 0}
                         </p>
                     </div>
                 </div>
 
                 {/* Filters */}
-                <div className="pos-card p-4 mb-6">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <div className="pos-card p-4 mb-6 shadow-sm">
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search by Return ID, Original ID or Cashier..."
-                                className="pos-input pl-12"
+                                placeholder="Search returns..."
+                                className="pos-input pl-12 h-12 lg:h-11"
                             />
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="pos-input w-full md:w-auto"
-                            />
-                            <span className="text-muted-foreground">to</span>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="pos-input w-full md:w-auto"
-                            />
+                            <div className="relative flex-1">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="pos-input pl-10 h-12 lg:h-11 w-full sm:w-40 text-xs"
+                                    title="Start Date"
+                                />
+                            </div>
+                            <span className="text-muted-foreground text-xs font-bold">TO</span>
+                            <div className="relative flex-1">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="pos-input pl-10 h-12 lg:h-11 w-full sm:w-40 text-xs"
+                                    title="End Date"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -249,36 +257,36 @@ const ReturnHistory: React.FC = () => {
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                        <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <p className="text-sm text-muted-foreground order-2 sm:order-1">
+                        <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4">
+                            <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
                                 Showing {currentReturns.length} of {filteredReturns.length} returns
                             </p>
-                            <div className="flex items-center gap-2 order-1 sm:order-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2 order-1 sm:order-2 w-full sm:w-auto justify-center">
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
-                                    className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                                    className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
                                 >
-                                    Previous
+                                    Prev
                                 </button>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 overflow-x-auto max-w-[150px] sm:max-w-none scrollbar-none">
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                         <button
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
-                                            className={`w-10 h-10 rounded-xl font-medium transition-all ${currentPage === page
-                                                ? 'bg-primary text-primary-foreground shadow-lg active:scale-95'
+                                            className={`min-w-[32px] sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${currentPage === page
+                                                ? 'bg-primary text-primary-foreground shadow-lg'
                                                 : 'hover:bg-muted text-muted-foreground'
                                                 }`}
                                         >
                                             {page}
                                         </button>
-                                    )).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2))}
+                                    ))}
                                 </div>
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                                    className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
                                 >
                                     Next
                                 </button>

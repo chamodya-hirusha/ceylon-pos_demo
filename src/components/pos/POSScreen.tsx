@@ -5,18 +5,17 @@ import { useNavigate } from 'react-router-dom';
 import ProductGrid from './ProductGrid';
 import CartPanel from './CartPanel';
 import { Product, CartItem, ReturnSale } from '@/data/demoData';
-import { LogOut, Pause, Play, Clock, Settings, History as HistoryIcon, RefreshCcw } from 'lucide-react';
+import { LogOut, Pause, Play, Clock, Settings, History as HistoryIcon, RefreshCcw, Keyboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle';
 import ShortcutDialog from './ShortcutDialog';
-import { Keyboard, Printer } from 'lucide-react';
 import InvoiceModal from './InvoiceModal';
 import { useShortcuts, matchesShortcut } from '@/contexts/ShortcutContext';
 
 const POSScreen: React.FC = () => {
   const { currentUser, logout, userType } = useAuth();
-  const { addItem, holdCart, resumeCart, items, updateQuantity, isReturnMode, originalSaleId, setReturnMode, originalItems } = useCart();
+  const { addItem, holdCart, resumeCart, items, updateQuantity, isReturnMode, originalSaleId, setReturnMode, originalItems, subtotal, tax, total, clearCart, updateDiscount } = useCart();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [heldBills, setHeldBills] = useState<{ items: CartItem[]; time: Date }[]>([]);
@@ -27,8 +26,9 @@ const POSScreen: React.FC = () => {
   const [showInvoice, setShowInvoice] = useState(false);
   const [lastSaleSnapshot, setLastSaleSnapshot] = useState<{ items: CartItem[]; subtotal: number; tax: number; total: number } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { subtotal, tax, total, clearCart, updateDiscount } = useCart();
   const { shortcuts } = useShortcuts();
+  
+  const [mobileView, setMobileView] = useState<'products' | 'cart'>('products');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -117,7 +117,6 @@ const POSScreen: React.FC = () => {
 
       // + / = (Increase Quantity)
       if ((e.key === '+' || e.key === '=') && !e.ctrlKey && !e.altKey) {
-        // Check if we are not in an input field
         if (document.activeElement?.tagName !== 'INPUT') {
           e.preventDefault();
           if (items.length > 0) {
@@ -159,13 +158,9 @@ const POSScreen: React.FC = () => {
   }, [items, showPayment, showHeldBills, showShortcuts]);
 
   const handleProductSelect = (product: Product) => {
-    // In Return Mode, allow searching and adding items from the original invoice
     if (isReturnMode) {
-      // Check if this product was in the original sale
       const originalItem = originalItems.find(i => i.product.id === product.id);
-
       if (!originalItem) {
-        // Product not in original sale - show error
         toast.error('Cannot add this item in Return Mode', {
           description: 'Only items from the original invoice can be returned.'
         });
@@ -173,7 +168,6 @@ const POSScreen: React.FC = () => {
       }
     }
 
-    // Add item to cart (CartContext has validation for return mode)
     addItem(product);
     const productName = i18n.language.startsWith('si') && product.nameSinhala ? product.nameSinhala : product.name;
 
@@ -205,22 +199,9 @@ const POSScreen: React.FC = () => {
   };
 
   const onCompleteSale = (method: 'cash' | 'card' | 'credit') => {
-    // Take snapshot for invoice
     setLastSaleSnapshot({ items: [...items], subtotal, tax, total });
 
     if (isReturnMode) {
-      // ===== RETURN PROCESSING RULES =====
-      // 1. Each invoice can be returned only once
-      // 2. When a return is confirmed:
-      //    - Create a separate return record (do not modify the original sale invoice)
-      //    - Update the invoice status to "Returned" (lock it)
-      //    - Restore returned item quantities back to inventory
-      // 3. Returned invoices become:
-      //    - Read-only
-      //    - Non-editable
-      //    - Non-returnable again
-
-      // 1. Create Return Record (separate from original sale)
       const returnRecord: ReturnSale = {
         id: `RET-${Math.floor(1000 + Math.random() * 9000)}`,
         originalSaleId: originalSaleId!,
@@ -234,23 +215,16 @@ const POSScreen: React.FC = () => {
         reason: 'Customer Return'
       };
 
-      // 2. Save Return Transaction (do not modify original sale)
       const existingReturnTransactions = JSON.parse(localStorage.getItem('simulated_return_transactions') || '[]');
       localStorage.setItem('simulated_return_transactions', JSON.stringify([...existingReturnTransactions, returnRecord]));
 
-      // 3. Update Invoice Status to "Returned" (Lock it - makes it read-only and non-returnable)
       const existingReturns = JSON.parse(localStorage.getItem('simulated_returns') || '[]');
       if (originalSaleId && !existingReturns.includes(originalSaleId)) {
         localStorage.setItem('simulated_returns', JSON.stringify([...existingReturns, originalSaleId]));
       }
 
-      // 4. Restore Inventory
       const currentInventory = JSON.parse(localStorage.getItem('simulated_inventory') || '{}');
       items.forEach(item => {
-        // If product not in local inventory yet, assumes it starts at demoData stock. 
-        // Ideally we would read from demoData but here we just store the OVERRIDES or current state.
-        // Simple approach: Let's assume we just store the NEW total.
-        // Since we can't easily access the original stock here without looking it up from products array:
         const currentStock = currentInventory[item.product.id] ?? item.product.stock;
         currentInventory[item.product.id] = currentStock + item.quantity;
       });
@@ -264,7 +238,6 @@ const POSScreen: React.FC = () => {
         description: `Payment method: ${method.toUpperCase()}`,
       });
 
-      // Simulate saving new sale
       const newSale = {
         id: `SALE-${Math.floor(10000 + Math.random() * 90000)}`,
         items: [...items],
@@ -275,43 +248,43 @@ const POSScreen: React.FC = () => {
         paymentMethod: method,
         cashierId: currentUser?.id || 'C001',
         cashierName: currentUser?.name || 'Cashier',
-        timestamp: new Date().toISOString(), // Store as string for JSON
+        timestamp: new Date().toISOString(),
       };
 
       const existingSales = JSON.parse(localStorage.getItem('simulated_sales') || '[]');
       localStorage.setItem('simulated_sales', JSON.stringify([newSale, ...existingSales]));
     }
 
-    clearCart(); // This also clears return mode
+    clearCart();
     setShowPayment(false);
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <header className="h-16 bg-card border-b border-border/50 px-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold">
+      <header className="h-16 bg-card border-b border-border/50 px-3 sm:px-4 flex items-center justify-between shadow-sm shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm sm:text-base shrink-0">
               H
             </div>
-            <div>
-              <h1 className="font-bold text-foreground">{t('app_name')}</h1>
-              <p className="text-xs text-muted-foreground">
-                {currentUser?.name || 'Cashier'} • Session Active
+            <div className="hidden xs:block overflow-hidden">
+              <h1 className="font-bold text-foreground text-sm sm:text-base truncate">{t('app_name')}</h1>
+              <p className="text-[10px] text-muted-foreground truncate">
+                {currentUser?.name || 'Cashier'}
               </p>
             </div>
           </div>
           {isReturnMode && (
-            <div className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-xl animate-pulse shadow-lg shadow-orange-500/20">
-              <RefreshCcw className="w-5 h-5" />
-              <div className="leading-tight">
-                <p className="text-xs font-bold uppercase tracking-tighter">Return Mode</p>
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-orange-500 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl animate-pulse shadow-lg shadow-orange-500/20 shrink-0">
+              <RefreshCcw className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              <div className="leading-tight hidden sm:block">
+                <p className="text-[10px] font-bold uppercase tracking-tighter">Return Mode</p>
                 <p className="text-[10px] opacity-90 font-mono">#{originalSaleId}</p>
               </div>
               <button
                 onClick={() => setReturnMode(null)}
-                className="ml-2 p-1 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-1 hover:bg-white/20 rounded-md transition-colors"
                 title="Cancel Return Mode"
               >
                 ✕
@@ -320,9 +293,8 @@ const POSScreen: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Time display */}
-          <div className="text-right hidden sm:block">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="text-right hidden lg:block">
             <p className="text-sm font-medium text-foreground">
               {currentTime.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' })}
             </p>
@@ -333,10 +305,9 @@ const POSScreen: React.FC = () => {
 
           <LanguageToggle />
 
-          {/* Keyboard shortcuts hint */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="hidden md:flex items-center gap-2 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
+            className="hidden xl:flex items-center gap-2 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
           >
             <Keyboard className="w-3.5 h-3.5" />
             <kbd className="px-1.5 py-0.5 bg-background rounded text-foreground font-mono">{shortcuts.search.label}</kbd>
@@ -345,45 +316,64 @@ const POSScreen: React.FC = () => {
             <span>- Pay</span>
           </button>
 
-          {/* History Button */}
-          <button
-            onClick={() => navigate('/pos/history')}
-            className="p-2 rounded-xl hover:bg-muted transition-colors"
-            title={t('sales_history') + ` (${shortcuts.history.label})`}
-          >
-            <HistoryIcon className="w-5 h-5 text-muted-foreground" />
-          </button>
-
-          {/* Actions */}
-          {userType === 'admin' && (
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
-              onClick={() => navigate('/admin')}
-              className="p-2 rounded-xl hover:bg-muted transition-colors"
-              title="Admin Panel"
+              onClick={() => navigate('/pos/history')}
+              className="p-2 rounded-lg sm:rounded-xl hover:bg-muted transition-colors"
+              title={t('sales_history') + ` (${shortcuts.history.label})`}
             >
-              <Settings className="w-5 h-5 text-muted-foreground" />
+              <HistoryIcon className="w-5 h-5 text-muted-foreground" />
             </button>
-          )}
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('logout')}</span>
-          </button>
+            {userType === 'admin' && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="p-2 rounded-lg sm:rounded-xl hover:bg-muted transition-colors"
+                title="Admin Panel"
+              >
+                <Settings className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="p-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex items-center gap-2"
+            >
+              <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline text-sm font-medium">{t('logout')}</span>
+            </button>
+          </div>
         </div>
       </header>
 
+      {/* Mobile Navigation Tabs */}
+      <div className="lg:hidden flex border-b border-border bg-card shrink-0">
+        <button
+          onClick={() => setMobileView('products')}
+          className={`flex-1 py-3 font-bold text-sm transition-all border-b-2 ${mobileView === 'products' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground'}`}
+        >
+          {t('products')}
+        </button>
+        <button
+          onClick={() => setMobileView('cart')}
+          className={`flex-1 py-3 font-bold text-sm transition-all border-b-2 relative ${mobileView === 'cart' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground'}`}
+        >
+          {t('cart')}
+          {items.length > 0 && (
+            <span className="ml-2 px-1.5 py-0.5 bg-primary text-primary-foreground text-[10px] rounded-full">
+              {items.length}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden p-4 gap-4">
-        {/* Products Section */}
-        <div className="flex-1 min-w-0">
+      <div className="flex-1 flex overflow-hidden p-2 sm:p-4 gap-2 sm:gap-4 relative">
+        <div className={`flex-1 min-w-0 h-full ${mobileView === 'products' ? 'block' : 'hidden lg:block'}`}>
           <ProductGrid onProductSelect={handleProductSelect} />
         </div>
 
-        {/* Cart Section */}
-        <div className="w-full max-w-md">
+        <div className={`w-full lg:max-w-md h-full ${mobileView === 'cart' ? 'block' : 'hidden lg:block'}`}>
           <CartPanel
             onHoldBill={handleHoldBill}
             heldBillsCount={heldBills.length}
@@ -400,37 +390,21 @@ const POSScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Held Bills Overlay */}
+      {/* Overlays */}
       {showHeldBills && heldBills.length > 0 && (
-        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm flex items-center justify-center z-[60] animate-fade-in">
           <div className="bg-card rounded-2xl shadow-pos-lg w-full max-w-md m-4 overflow-hidden">
             <div className="p-4 border-b border-border/50 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-foreground">Held Bills</h3>
-              <button
-                onClick={() => setShowHeldBills(false)}
-                className="p-2 rounded-lg hover:bg-muted transition-colors"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowHeldBills(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">✕</button>
             </div>
-            <div className="p-4 space-y-3 max-h-80 overflow-auto">
+            <div className="p-4 space-y-3 max-h-[60vh] overflow-auto">
               {heldBills.map((bill, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleResumeBill(index)}
-                  className="w-full p-4 pos-card-hover flex items-center gap-3"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Pause className="w-5 h-5 text-primary" />
-                  </div>
+                <button key={index} onClick={() => handleResumeBill(index)} className="w-full p-4 pos-card-hover flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Pause className="w-5 h-5 text-primary" /></div>
                   <div className="flex-1 text-left">
-                    <p className="font-medium text-foreground">
-                      {bill.items.length} items
-                    </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {bill.time.toLocaleTimeString()}
-                    </p>
+                    <p className="font-medium text-foreground">{bill.items.length} items</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{bill.time.toLocaleTimeString()}</p>
                   </div>
                   <Play className="w-5 h-5 text-primary" />
                 </button>
@@ -440,12 +414,8 @@ const POSScreen: React.FC = () => {
         </div>
       )}
 
-      {/* Shortcut Dialog */}
-      {showShortcuts && (
-        <ShortcutDialog onClose={() => setShowShortcuts(false)} />
-      )}
+      {showShortcuts && <ShortcutDialog onClose={() => setShowShortcuts(false)} />}
 
-      {/* Invoice Modal */}
       {showInvoice && lastSaleSnapshot && (
         <InvoiceModal
           items={lastSaleSnapshot.items}
@@ -458,15 +428,14 @@ const POSScreen: React.FC = () => {
         />
       )}
 
-      {/* Floating Held Bills Button */}
       {heldBills.length > 0 && !showHeldBills && (
         <button
           onClick={() => setShowHeldBills(true)}
-          className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-3 bg-warning text-warning-foreground rounded-2xl shadow-lg hover:shadow-xl transition-all animate-fade-in"
+          className="fixed bottom-20 lg:bottom-6 right-6 flex items-center gap-2 px-4 py-3 bg-warning text-warning-foreground rounded-2xl shadow-lg hover:shadow-xl transition-all animate-fade-in z-40"
         >
           <Pause className="w-5 h-5" />
-          <span className="font-semibold">{heldBills.length} {t('hold')}</span>
-          <span className="text-[10px] opacity-60 font-mono ml-1">F4</span>
+          <span className="font-semibold hidden sm:inline">{heldBills.length} {t('hold')}</span>
+          <span className="text-[10px] opacity-60 font-mono ml-1 hidden sm:inline">F4</span>
         </button>
       )}
     </div>

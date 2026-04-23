@@ -124,24 +124,22 @@ const Reports: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 mt-2 lg:mt-0">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Detailed business performance insights</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-1">Reports & Analytics</h1>
+          <p className="text-sm lg:text-base text-muted-foreground">Detailed business performance insights</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={exportPDF}
-            className="pos-btn-primary flex items-center gap-2"
-          >
-            <Download className="w-5 h-5" />
-            Export PDF
-          </button>
-        </div>
+        <button
+          onClick={exportPDF}
+          className="pos-btn-primary flex items-center justify-center gap-2 py-3.5 px-6 w-full sm:w-auto"
+        >
+          <Download className="w-5 h-5" />
+          <span className="font-bold">Export PDF</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-8">
         {[
           { icon: FileText, color: 'text-primary', bg: 'bg-primary/10', title: 'Sales', action: handlePrintSales },
           { icon: Package, color: 'text-success', bg: 'bg-success/10', title: 'Inventory', action: handlePrintInventory },
@@ -153,33 +151,33 @@ const Reports: React.FC = () => {
           <button
             key={idx}
             onClick={item.action}
-            className="pos-card p-3 flex flex-col items-center gap-2 hover:border-primary/50 transition-colors"
+            className="pos-card p-2 sm:p-3 flex flex-col items-center gap-2 hover:border-primary/50 transition-all active:scale-95"
           >
-            <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
-              <item.icon className={`w-5 h-5 ${item.color}`} />
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${item.bg} flex items-center justify-center`}>
+              <item.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${item.color}`} />
             </div>
-            <span className="text-xs font-semibold text-foreground">{item.title}</span>
+            <span className="text-[10px] sm:text-xs font-bold text-foreground uppercase tracking-tighter">{item.title}</span>
           </button>
         ))}
       </div>
 
       <div id="reports-content">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="pos-stat-card border-l-4 border-l-primary">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Total Revenue</p>
-            <p className="text-xl font-bold text-foreground">Rs. {totalSalesValue.toLocaleString()}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-8">
+          <div className="pos-stat-card p-4 border-l-4 border-l-primary">
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Total Revenue</p>
+            <p className="text-lg lg:text-2xl font-black text-foreground truncate">Rs. {totalSalesValue.toLocaleString()}</p>
           </div>
-          <div className="pos-stat-card border-l-4 border-l-success">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Gross Profit</p>
-            <p className="text-xl font-bold text-success">Rs. {totalProfit.toLocaleString()}</p>
+          <div className="pos-stat-card p-4 border-l-4 border-l-success">
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Gross Profit</p>
+            <p className="text-lg lg:text-2xl font-black text-success truncate">Rs. {totalProfit.toLocaleString()}</p>
           </div>
-          <div className="pos-stat-card border-l-4 border-l-destructive">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Total Refunds</p>
-            <p className="text-xl font-bold text-destructive">Rs. {totalRefundValue.toLocaleString()}</p>
+          <div className="pos-stat-card p-4 border-l-4 border-l-destructive">
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Total Refunds</p>
+            <p className="text-lg lg:text-2xl font-black text-destructive truncate">Rs. {totalRefundValue.toLocaleString()}</p>
           </div>
-          <div className="pos-stat-card border-l-4 border-l-warning">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Avg. Sale</p>
-            <p className="text-xl font-bold text-foreground">Rs. {Math.round(avgSale).toLocaleString()}</p>
+          <div className="pos-stat-card p-4 border-l-4 border-l-warning">
+            <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Avg. Sale</p>
+            <p className="text-lg lg:text-2xl font-black text-foreground truncate">Rs. {Math.round(avgSale).toLocaleString()}</p>
           </div>
         </div>
 

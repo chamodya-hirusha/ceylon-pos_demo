@@ -151,38 +151,38 @@ const SalesHistory: React.FC = () => {
   }, [searchTerm, paymentFilter, startDate, endDate]);
 
   return (
-    <div className="p-6">
+    <div className="p-4 lg:p-6 pb-24 lg:pb-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 mt-2 lg:mt-0">
         <div className="flex items-center gap-4">
           {userType === 'cashier' && (
             <button
               onClick={() => navigate('/pos')}
-              className="p-2 rounded-xl hover:bg-muted transition-colors flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors flex items-center gap-2 text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium hidden sm:inline">{t('back_to_pos')}</span>
             </button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('sales_history')}</h1>
-            <p className="text-muted-foreground">{t('sales_transactions')}</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-1">{t('sales_history')}</h1>
+            <p className="text-sm lg:text-base text-muted-foreground">{t('sales_transactions')}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => navigate(userType === 'cashier' ? '/pos/returns' : '/admin/return-history')}
-            className="pos-btn-secondary flex items-center gap-2"
+            className="pos-btn-secondary flex items-center justify-center gap-2 py-3 px-6 w-full sm:w-auto"
           >
             <RefreshCcw className="w-5 h-5" />
-            View Returns
+            <span className="font-bold">View Returns</span>
           </button>
           <button
             onClick={exportPDF}
-            className="pos-btn-secondary flex items-center gap-2"
+            className="pos-btn-secondary flex items-center justify-center gap-2 py-3 px-6 w-full sm:w-auto"
           >
             <Download className="w-5 h-5" />
-            {t('export_report')}
+            <span className="font-bold">{t('export_report')}</span>
           </button>
         </div>
       </div>
@@ -190,91 +190,93 @@ const SalesHistory: React.FC = () => {
       <div id="sales-export-content" className="bg-background p-1">
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="pos-stat-card border-l-4 border-l-primary">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-8">
+          <div className="pos-stat-card p-4 border-l-4 border-l-primary">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground font-medium">{t('today_orders')}</p>
-              <ShoppingBag className="w-4 h-4 text-primary" />
+              <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{t('today_orders')}</p>
+              <ShoppingBag className="w-4 h-4 text-primary opacity-50" />
             </div>
-            <p className="text-2xl font-bold text-foreground">{filteredSales.length}</p>
+            <p className="text-xl lg:text-2xl font-black text-foreground">{filteredSales.length}</p>
           </div>
-          <div className="pos-stat-card border-l-4 border-l-primary/60">
+          <div className="pos-stat-card p-4 border-l-4 border-l-primary/60">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground font-medium">{t('total_amount')}</p>
-              <DollarSign className="w-4 h-4 text-primary/60" />
+              <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{t('total_amount')}</p>
+              <DollarSign className="w-4 h-4 text-primary/60 opacity-50" />
             </div>
-            <p className="text-2xl font-bold text-primary">Rs. {totalAmount.toLocaleString()}</p>
+            <p className="text-xl lg:text-2xl font-black text-primary truncate">Rs. {totalAmount.toLocaleString()}</p>
           </div>
-          <div className="pos-stat-card border-l-4 border-l-success">
+          <div className="pos-stat-card p-4 border-l-4 border-l-success">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground font-medium">{t('cash_sales')}</p>
-              <Wallet className="w-4 h-4 text-success" />
+              <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{t('cash_sales')}</p>
+              <Wallet className="w-4 h-4 text-success opacity-50" />
             </div>
-            <p className="text-2xl font-bold text-success">
+            <p className="text-xl lg:text-2xl font-black text-success">
               {filteredSales.filter((s) => s.paymentMethod === 'cash').length}
             </p>
           </div>
-          <div className="pos-stat-card border-l-4 border-l-accent-foreground">
+          <div className="pos-stat-card p-4 border-l-4 border-l-accent-foreground">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground font-medium">{t('card_sales')}</p>
-              <CardIcon className="w-4 h-4 text-accent-foreground" />
+              <p className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{t('card_sales')}</p>
+              <CardIcon className="w-4 h-4 text-accent-foreground opacity-50" />
             </div>
-            <p className="text-2xl font-bold text-accent-foreground">
+            <p className="text-xl lg:text-2xl font-black text-accent-foreground">
               {filteredSales.filter((s) => s.paymentMethod === 'card').length}
             </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="pos-card p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="pos-card p-4 mb-6 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <div className="flex-1 relative group order-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={t('search_invoice')}
-                className="pos-input pl-12"
+                className="pos-input pl-12 h-12 lg:h-11"
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="pos-input pl-12 w-full md:w-auto"
-                  title="Start Date"
-                />
+            <div className="flex flex-col sm:flex-row items-center gap-3 order-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:flex-none">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="pos-input pl-10 h-12 lg:h-11 w-full sm:w-40 text-xs"
+                    title="Start Date"
+                  />
+                </div>
+                <span className="text-muted-foreground text-xs font-bold">TO</span>
+                <div className="relative flex-1 sm:flex-none">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="pos-input pl-10 h-12 lg:h-11 w-full sm:w-40 text-xs"
+                    title="End Date"
+                  />
+                </div>
               </div>
-              <span className="text-muted-foreground">to</span>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="pos-input pl-12 w-full md:w-auto"
-                  title="End Date"
-                />
-              </div>
-            </div>
 
-            {/* Payment Filter */}
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
-              className="pos-input w-full md:w-48"
-            >
-              <option value="all">{t('all_payments')}</option>
-              <option value="cash">{t('cash')}</option>
-              <option value="card">{t('card')}</option>
-              <option value="credit">{t('credit')}</option>
-            </select>
+              {/* Payment Filter */}
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className="pos-input h-12 lg:h-11 w-full sm:w-40 bg-muted/50"
+              >
+                <option value="all">{t('all_payments')}</option>
+                <option value="cash">{t('cash')}</option>
+                <option value="card">{t('card')}</option>
+                <option value="credit">{t('credit')}</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -373,39 +375,39 @@ const SalesHistory: React.FC = () => {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground order-2 sm:order-1">
+            <div className="p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4">
+              <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
                 {t('showing_sales', {
                   count: currentSales.length,
                   total: filteredSales.length
                 })}
               </p>
-              <div className="flex items-center gap-2 order-1 sm:order-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 order-1 sm:order-2 w-full sm:w-auto justify-center">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                  className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
                 >
-                  Previous
+                  Prev
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 overflow-x-auto max-w-[150px] sm:max-w-none scrollbar-none">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-10 h-10 rounded-xl font-medium transition-all ${currentPage === page
-                        ? 'bg-primary text-primary-foreground shadow-lg active:scale-95'
+                      className={`min-w-[32px] sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${currentPage === page
+                        ? 'bg-primary text-primary-foreground shadow-lg'
                         : 'hover:bg-muted text-muted-foreground'
                         }`}
                     >
                       {page}
                     </button>
-                  )).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2))}
+                  ))}
                 </div>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="pos-btn-secondary py-2 px-4 disabled:opacity-50"
+                  className="pos-btn-secondary py-2 px-3 sm:px-4 disabled:opacity-50 text-xs sm:text-sm h-10"
                 >
                   Next
                 </button>
