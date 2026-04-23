@@ -104,9 +104,25 @@ const reportTemplateStyles = `
     padding-top: 20px;
   }
   
+  @media (max-width: 768px) {
+    body { padding: 10px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-value { font-size: 16px; }
+    .shop-name { font-size: 20px; }
+    .report-title { font-size: 16px; }
+    table { font-size: 10px; }
+    th, td { padding: 8px 5px; }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .report-header { margin-bottom: 20px; }
+  }
+
   @media print {
     body { padding: 0; }
     .no-print { display: none; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
   }
 `;
 

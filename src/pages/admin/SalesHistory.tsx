@@ -240,26 +240,26 @@ const SalesHistory: React.FC = () => {
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 order-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 order-2 w-full lg:w-auto">
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <div className="relative flex-1 sm:flex-none">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="relative flex-1">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="pos-input pl-10 h-12 lg:h-11 w-full sm:w-40 text-xs"
+                    className="pos-input pl-9 h-11 w-full sm:w-36 text-[11px]"
                     title="Start Date"
                   />
                 </div>
-                <span className="text-muted-foreground text-xs font-bold">TO</span>
-                <div className="relative flex-1 sm:flex-none">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground text-[10px] font-bold shrink-0">TO</span>
+                <div className="relative flex-1">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="pos-input pl-10 h-12 lg:h-11 w-full sm:w-40 text-xs"
+                    className="pos-input pl-9 h-11 w-full sm:w-36 text-[11px]"
                     title="End Date"
                   />
                 </div>
@@ -269,7 +269,7 @@ const SalesHistory: React.FC = () => {
               <select
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value)}
-                className="pos-input h-12 lg:h-11 w-full sm:w-40 bg-muted/50"
+                className="pos-input h-11 w-full sm:w-40 bg-muted/50"
               >
                 <option value="all">{t('all_payments')}</option>
                 <option value="cash">{t('cash')}</option>

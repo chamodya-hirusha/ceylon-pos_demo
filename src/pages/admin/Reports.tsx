@@ -156,7 +156,7 @@ const Reports: React.FC = () => {
             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${item.bg} flex items-center justify-center`}>
               <item.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${item.color}`} />
             </div>
-            <span className="text-[10px] sm:text-xs font-bold text-foreground uppercase tracking-tighter">{item.title}</span>
+            <span className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-foreground uppercase tracking-tighter text-center leading-tight">{item.title}</span>
           </button>
         ))}
       </div>
@@ -184,17 +184,18 @@ const Reports: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           <div className="pos-card p-6">
             <h3 className="font-semibold text-foreground mb-4">Monthly Trends</h3>
-            <div className="h-64">
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
+                <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `${v / 1000}k`} />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickFormatter={(v) => `${v / 1000}k`} tickLine={false} axisLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }}
+                    cursor={{ fill: 'hsl(var(--muted)/0.4)' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                     formatter={(val: number) => [`Rs. ${val.toLocaleString()}`]}
                   />
-                  <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -202,21 +203,24 @@ const Reports: React.FC = () => {
 
           <div className="pos-card p-6">
             <h3 className="font-semibold text-foreground mb-4">Sales by Category</h3>
-            <div className="h-64">
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={categoryData}
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius="60%"
+                    outerRadius="80%"
                     paddingAngle={5}
                     dataKey="value"
+                    stroke="none"
                   >
                     {categoryData.map((_, index) => (
                       <Cell key={index} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
